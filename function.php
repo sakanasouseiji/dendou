@@ -45,4 +45,98 @@ function scraping($url){
 
 	return $html;
 }
+
+class ShopScraping{
+	public	$shop;
+	public	$FirstPage;
+	public	$page;
+	public	$firstPattern;
+	public	$itemPattern;
+	public	$zeinukiPatternn;
+	public	$zeikomiPattern;
+
+	public	$itemDeletePattern;
+
+	public	$zeinukiDeletePattern;
+	public	$zeikomiDeletePattern;
+	public	$url;
+	public	$AllResult;
+	function __construct($shop){
+		//変数の代入
+		$this->shop=$shop;
+		
+
+	}
+	function All(){
+		$page=$this->shop->FirstPage;
+
+		do{
+			$pageResult=$this->pageScraping($page);
+			$this->AllResult.=$pageResult;
+			$page++;
+		}while($pageResult!=false or $pageResult!=0 or $page<9);	
+
+		file_put_contents('finalResult.txt',$AllResult,LOCK_EX);
+
+	}
+	function pageScraping($page){
+
+		$firstPattern=$this->shop->firstPattern;
+		$itemPattern=$this->shop->itemPattern;
+		$zeinukiPattern=$this->shop->zeinukiPattern;
+		$zeikomiPattern=$this->shop->zeikomiPattern;
+		$itemDeletePattern=$this->shop->itemDeletePattern;
+		$zeinukiDeletePattern=$this->shop->zeinukiDeletePattern;
+		$zeikomiDeletePattern=$this->shop->zeikomiDeletePattern;
+
+		$url=$this->shop->url($page);
+		print $url."\r\n";
+		$firstPattern=$this->shop->firstPattern;
+
+		$itemName=array();
+		$zeinukiPrice=array();
+		$zeikomiPrice=array();
+		$pageResult="";
+
+		//クッキー取得のためのURL
+		//ここにアクセスすればクッキーにフラグが立つというページ
+		$scrap=scraping($url);
+		//スクレイピングファイル出力
+		file_put_contents('pageScrap.html'.$page,$scrap,LOCK_EX);
+
+		//ここから抽出
+
+		$endFlag=preg_match_all($firstPattern,$scrap,$array);
+		if(	$endFlag==0 or	$endFlag==false	){
+			return false;
+		}
+
+		//preg_match_allファイル出力
+		error_log(var_export($array[0],true),3,"./scrap2.html");
+
+
+		//必要なのは全体検索の結果のみ
+		$array=$array[0];
+
+		file_put_contents('array'.$page.'.html',$array,LOCK_EX);
+
+		foreach($array as $key => $cell){
+			preg_match($itemPattern,$cell,$itemName);
+			preg_match($zeinukiPattern,$cell,$zeinukiPrice);
+			preg_match($zeikomiPattern,$cell,$zeikomiPrice);
+
+			$itemName[0]=str_replace($itemDeletePattern,"",$itemName[0]);
+			$zeinukiPrice[0]=str_replace($zeinukiDeletePattern,"",$zeinukiPrice[0]);
+			$zeikomiPrice[0]=str_replace($zeikomiDeletePattern,"",$zeikomiPrice[0]);
+
+
+			$pageResult.=$itemName[0]."\n";
+			$pageResult.=$zeinukiPrice[0]."\n";
+			$pageResult.=$zeikomiPrice[0]."\n";
+		}
+		print $pageResult;
+		return $pageResult;
+	}
+}
+
 ?>
