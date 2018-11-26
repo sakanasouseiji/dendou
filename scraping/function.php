@@ -74,9 +74,9 @@ class ShopScraping{
 			$pageResult=$this->pageScraping($page);
 			$this->AllResult.=$pageResult;
 			$page++;
-		}while($pageResult!=false or $pageResult!=0 or $page<9);	
+		}while(	$pageResult!=false or $pageResult!=0	);	
 
-		file_put_contents('finalResult.txt',$AllResult,LOCK_EX);
+		file_put_contents('finalResult.txt',$this->AllResult,LOCK_EX);
 
 	}
 	function pageScraping($page){
@@ -90,6 +90,7 @@ class ShopScraping{
 		$zeikomiDeletePattern=$this->shop->zeikomiDeletePattern;
 
 		$url=$this->shop->url($page);
+		print "取得url ページ".$page."\r\n";
 		print $url."\r\n";
 		$firstPattern=$this->shop->firstPattern;
 
@@ -101,8 +102,9 @@ class ShopScraping{
 		//クッキー取得のためのURL
 		//ここにアクセスすればクッキーにフラグが立つというページ
 		$scrap=scraping($url);
+
 		//スクレイピングファイル出力
-		file_put_contents('pageScrap.html'.$page,$scrap,LOCK_EX);
+		//file_put_contents('pageScrap.html'.$page,$scrap,LOCK_EX);
 
 		//ここから抽出
 
@@ -112,13 +114,13 @@ class ShopScraping{
 		}
 
 		//preg_match_allファイル出力
-		error_log(var_export($array[0],true),3,"./scrap2.html");
+		//error_log(var_export($array[0],true),3,"./scrap2.html");
 
 
 		//必要なのは全体検索の結果のみ
 		$array=$array[0];
 
-		file_put_contents('array'.$page.'.html',$array,LOCK_EX);
+		//file_put_contents('array'.$page.'.html',$array,LOCK_EX);
 
 		foreach($array as $key => $cell){
 			preg_match($itemPattern,$cell,$itemName);
@@ -134,7 +136,7 @@ class ShopScraping{
 			$pageResult.=$zeinukiPrice[0]."\n";
 			$pageResult.=$zeikomiPrice[0]."\n";
 		}
-		print $pageResult;
+		//print $pageResult;
 		return $pageResult;
 	}
 }
