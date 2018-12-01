@@ -13,12 +13,12 @@ class AeonShop{
 	public	$page;
 	//ここからイオンバイク用取得パターン
 	//最初に枠取得用パターン
-	public	$firstPattern='/StyleD_Item(.*?)\/table>/s';
+	public	$firstPattern='/StyleD_Item(.*?)\/table>/ius';
 	//商品名取得用パターン
-	public	$itemPattern="/title=\".*?\"><img alt/s";
+	public	$itemPattern="/title=\".*?\"><img alt/ius";
 	//値段取得用パターン
-	public	$zeinukiPattern="/font-size:16px\">.*?<\/span>/";
-	public	$zeikomiPattern="/font-size:12px\">.*?<\/span>/";
+	public	$zeinukiPattern="/font-size:16px\">.*?<\/span>/ius";
+	public	$zeikomiPattern="/font-size:12px\">.*?<\/span>/ius";
 
 	//削除用パターン
 	//商品名用
