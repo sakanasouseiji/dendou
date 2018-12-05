@@ -48,6 +48,7 @@ function scraping($url){
 
 class ShopScraping{
 	public	$shop;
+	public	$shopName;
 	public	$FirstPage;
 	public	$page;
 	public	$firstPattern;
@@ -64,10 +65,11 @@ class ShopScraping{
 	function __construct($shop){
 		//変数の代入
 		$this->shop=$shop;
-		
+		$this->shopName=get_class($shop);
 
 	}
 	function All(){
+		
 		print "取得日".date("Ymd")."\r\n";
 		$page=$this->shop->FirstPage;
 
@@ -77,7 +79,7 @@ class ShopScraping{
 			$page++;
 		}while(	$pageResult!=false or $pageResult!=0	);	
 
-		file_put_contents('AllResult'.date("Ymd").'.csv',$this->AllResult,LOCK_EX);
+		file_put_contents($this->shopName.'AllResult'.date("Ymd").'.csv',$this->AllResult,LOCK_EX);
 
 	}
 	function pageScraping($page){
@@ -104,18 +106,19 @@ class ShopScraping{
 		//ここにアクセスすればクッキーにフラグが立つというページ
 		$scrap=scraping($url);
 
-		//スクレイピングファイル出力
-		//file_put_contents('pageScrap.html'.$page,$scrap,LOCK_EX);
+		//スクレイピングファイル出力(デバッグ用)
+		//file_put_contents('pageScrap'.$page.'.html',$scrap,LOCK_EX);
 
 		//ここから抽出
 
 		$endFlag=preg_match_all($firstPattern,$scrap,$array);
 		if(	$endFlag==0 or	$endFlag==false	){
+			print "枠取得失敗か終了\r\n";
 			return false;
 		}
 
-		//preg_match_allファイル出力
-		//error_log(var_export($array[0],true),3,"./scrap2.html");
+		//preg_match_allファイル出力(デバッグ用)
+		//error_log(var_export($array[0],true),3,"./scrap".$page.".html");
 
 
 		//必要なのは全体検索の結果のみ
@@ -125,24 +128,25 @@ class ShopScraping{
 
 		foreach($array as $key => $cell){
 			preg_match($itemPattern,$cell,$itemName);
-			preg_match($zeinukiPattern,$cell,$zeinukiPrice);
-			preg_match($zeikomiPattern,$cell,$zeikomiPrice);
+			@preg_match($zeinukiPattern,$cell,$zeinukiPrice);
+			@preg_match($zeikomiPattern,$cell,$zeikomiPrice);
 
 			$itemName[0]=str_replace($itemDeletePattern,"",$itemName[0]);
-			$zeinukiPrice[0]=str_replace($zeinukiDeletePattern,"",$zeinukiPrice[0]);
+			$zeinukiPrice[0]=@str_replace($zeinukiDeletePattern,"",$zeinukiPrice[0]);
 			$zeikomiPrice[0]=str_replace($zeikomiDeletePattern,"",$zeikomiPrice[0]);
 			preg_match("/20[0-9][0-9][-ー\/]?[0-9]{0,4}/",$itemName[0],$nenshiki);
 
 
 			//,を取る
-			$zeinukiPrice[0]=str_replace(",","",$zeinukiPrice[0]);
-			$zeikomiPrice[0]=str_replace(",","",$zeikomiPrice[0]);
+			$zeinukiPrice[0]=@str_replace(",","",$zeinukiPrice[0]);
+			$zeikomiPrice[0]=@str_replace(",","",$zeikomiPrice[0]);
 
 
 			//年式取得できない場合暫定で0000を入れる
 			$pageResult.=(	array_key_exists(0,$nenshiki)	)?$nenshiki[0].",":"0000".",";
+			//print_r($itemName);
 			$pageResult.=$itemName[0].",";
-			$pageResult.=$zeinukiPrice[0].",";
+			$pageResult.=(	isset($zeinukiPrice[0])	)?$zeinukiPrice[0].",":",";
 			$pageResult.=$zeikomiPrice[0]."\n";
 		}
 		//print $pageResult;
