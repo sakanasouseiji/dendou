@@ -65,7 +65,7 @@ class ShopScraping{
 	function __construct($shop){
 		//変数の代入
 		$this->shop=$shop;
-		$this->shopName=get_class($shop);
+		$this->className=get_class($shop);
 
 	}
 	function All(){
@@ -79,10 +79,11 @@ class ShopScraping{
 			$page++;
 		}while(	$pageResult!=false or $pageResult!=0	);	
 
-		file_put_contents($this->shopName.'AllResult'.date("Ymd").'.csv',$this->AllResult,LOCK_EX);
+		file_put_contents($this->shop->fileName.'Result'.date("Ymd").'.csv',$this->AllResult,FILE_APPEND|LOCK_EX);
 
 	}
 	function pageScraping($page){
+		$shopName=$this->shop->shopName;
 		$firstPattern=$this->shop->firstPattern;
 		$itemPattern=$this->shop->itemPattern;
 		$zeinukiPattern=$this->shop->zeinukiPattern;
@@ -131,7 +132,7 @@ class ShopScraping{
 			@preg_match($zeinukiPattern,$cell,$zeinukiPrice);
 			@preg_match($zeikomiPattern,$cell,$zeikomiPrice);
 
-			$itemName[0]=str_replace($itemDeletePattern,"",$itemName[0]);
+			$itemName[0]=mb_convert_kana(	str_replace($itemDeletePattern,"",$itemName[0])	,'KVas','UTF-8'	);
 			$zeinukiPrice[0]=@str_replace($zeinukiDeletePattern,"",$zeinukiPrice[0]);
 			$zeikomiPrice[0]=str_replace($zeikomiDeletePattern,"",$zeikomiPrice[0]);
 			preg_match("/20[0-9][0-9][-ー\/]?[0-9]{0,4}/",$itemName[0],$nenshiki);
@@ -141,6 +142,9 @@ class ShopScraping{
 			$zeinukiPrice[0]=@str_replace(",","",$zeinukiPrice[0]);
 			$zeikomiPrice[0]=@str_replace(",","",$zeikomiPrice[0]);
 
+
+			//
+			$pageResult.=$shopName.",";
 
 			//年式取得できない場合暫定で0000を入れる
 			$pageResult.=(	array_key_exists(0,$nenshiki)	)?$nenshiki[0].",":"0000".",";

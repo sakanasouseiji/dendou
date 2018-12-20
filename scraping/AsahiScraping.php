@@ -9,6 +9,7 @@ require_once("./function.php");
 
 //代入用クラス(さいくるべーすあさひ)
 class AsahiShop{
+	public	$shopName="サイクルベースあさひ";
 	public	$FirstPage=0;
 	public	$page;
 	//ここからあさひ用取得パターン

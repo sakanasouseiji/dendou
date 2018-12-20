@@ -9,6 +9,7 @@ require_once("./function.php");
 
 //代入用クラス(イオンバイク)
 class AeonShop{
+	public	$shopName="イオンバイク";
 	public	$FirstPage=1;
 	public	$page;
 	//ここからイオンバイク用取得パターン

@@ -9,6 +9,7 @@ require_once("./function.php");
 
 //代入用クラス(サイクルスポット)
 class CSShop{
+	public	$shopName="サイクルスポット";
 	public	$FirstPage=0;
 	public	$page;
 	//ここからサイクルスポット用取得パターン
