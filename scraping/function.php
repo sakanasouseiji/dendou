@@ -62,10 +62,20 @@ class ShopScraping{
 	public	$zeikomiDeletePattern;
 	public	$url;
 	public	$AllResult;
+	public	$printResult;
+
+	public	$host;
+	public	$dbName;
+	public	$dbUser;
+	public	$dbPass;	
 	function __construct($shop){
+		require_once("dbConfig.php");
+		
 		//変数の代入
 		$this->shop=$shop;
 		$this->className=get_class($shop);
+
+		
 
 	}
 	function All(){
@@ -75,11 +85,15 @@ class ShopScraping{
 
 		do{
 			$pageResult=$this->pageScraping($page);
-			$this->AllResult.=$pageResult;
+			$this->dbWrite($pageResult);
+			$this->printResult.=implode(",",$pageResult);
+
 			$page++;
 		}while(	$pageResult!=false or $pageResult!=0	);	
 
-		file_put_contents($this->shop->fileName.'Result'.date("Ymd").'.csv',$this->AllResult,FILE_APPEND|LOCK_EX);
+		file_put_contents($this->shop->fileName.'Result'.date("Ymd").'.csv',$this->printResult,FILE_APPEND|LOCK_EX);
+
+		return;
 
 	}
 	function pageScraping($page){
@@ -91,6 +105,7 @@ class ShopScraping{
 		$itemDeletePattern=$this->shop->itemDeletePattern;
 		$zeinukiDeletePattern=$this->shop->zeinukiDeletePattern;
 		$zeikomiDeletePattern=$this->shop->zeikomiDeletePattern;
+		$pageResult=array();
 
 		$url=$this->shop->url($page);
 		print "取得url ページ".$page."\r\n";
@@ -101,7 +116,6 @@ class ShopScraping{
 		$itemName=array();
 		$zeinukiPrice=array();
 		$zeikomiPrice=array();
-		$pageResult="";
 
 		//クッキー取得のためのURL
 		//ここにアクセスすればクッキーにフラグが立つというページ
@@ -144,18 +158,37 @@ class ShopScraping{
 
 
 			//
-			$pageResult.=$shopName.",";
+			$pageResult[]=$shopName.",";
 
 			//年式取得できない場合暫定で0000を入れる
-			$pageResult.=(	array_key_exists(0,$nenshiki)	)?$nenshiki[0].",":"0000".",";
+			$pageResult[]=(	array_key_exists(0,$nenshiki)	)?$nenshiki[0].",":"0000".",";
 			//print_r($itemName);
-			$pageResult.=$itemName[0].",";
-			$pageResult.=(	isset($zeinukiPrice[0])	)?$zeinukiPrice[0].",":",";
-			$pageResult.=$zeikomiPrice[0]."\n";
+			$pageResult[]=$itemName[0].",";
+			$pageResult[]=(	isset($zeinukiPrice[0])	)?$zeinukiPrice[0].",":",";
+			$pageResult[]=$zeikomiPrice[0]."\n";
 		}
 		//print $pageResult;
 		return $pageResult;
 	}
+	function dbWrite($pageResult){
+		$host=$this->host;
+		$dbName=$this->dbName;
+		$dbUser=$this->dbUser;
+		$dbPass=$this->dbPass;
+
+		//db書き込み
+		try{
+			$PDO=new PDO("mysql:host=".$host.";dbname=".$dbName,$dbUser,$dbPass);
+
+		}catch(PDOException $error){
+			print "db接続エラー\n";
+			exit($error->getMessage());
+		}
+
+
+		return;
+	}
+
 }
 
 ?>
