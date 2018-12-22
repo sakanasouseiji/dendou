@@ -86,7 +86,18 @@ class ShopScraping{
 		do{
 			$pageResult=$this->pageScraping($page);
 			$this->dbWrite($pageResult);
-			$this->printResult.=implode(",",$pageResult);
+
+			//ここからpageResultをcsvにするために再度分割
+			if(		$pageResult!=false or $pageResult!=0		){
+				foreach($pageResult as $ireko){
+					$ireko=@implode(",",$ireko);
+					str_replace(	"\n,","\n",$ireko	);
+					$this->printResult.=$ireko;
+				}
+			}
+
+			//ここまで
+
 
 			$page++;
 		}while(	$pageResult!=false or $pageResult!=0	);	
@@ -106,6 +117,7 @@ class ShopScraping{
 		$zeinukiDeletePattern=$this->shop->zeinukiDeletePattern;
 		$zeikomiDeletePattern=$this->shop->zeikomiDeletePattern;
 		$pageResult=array();
+		$lineResult=array();
 
 		$url=$this->shop->url($page);
 		print "取得url ページ".$page."\r\n";
@@ -158,19 +170,25 @@ class ShopScraping{
 
 
 			//
-			$pageResult[]=$shopName.",";
+			$lineResult["店名"]=$shopName;
 
 			//年式取得できない場合暫定で0000を入れる
-			$pageResult[]=(	array_key_exists(0,$nenshiki)	)?$nenshiki[0].",":"0000".",";
+			$lineResult["年式"]=(array_key_exists(0,$nenshiki)	)?$nenshiki[0]:"0000";
 			//print_r($itemName);
-			$pageResult[]=$itemName[0].",";
-			$pageResult[]=(	isset($zeinukiPrice[0])	)?$zeinukiPrice[0].",":",";
-			$pageResult[]=$zeikomiPrice[0]."\n";
+			$lineResult["文言"]=$itemName[0];
+			$lineResult["税抜"]=(	isset($zeinukiPrice[0])	)?$zeinukiPrice[0]:"";
+			$lineResult["税込み"]=$zeikomiPrice[0]."\n";
+
+			$pageResult[]=$lineResult;
 		}
-		//print $pageResult;
+		//print_r( $lineResult);
+		//print_r( $pageResult);
 		return $pageResult;
 	}
 	function dbWrite($pageResult){
+
+		return;
+
 		$host=$this->host;
 		$dbName=$this->dbName;
 		$dbUser=$this->dbUser;
