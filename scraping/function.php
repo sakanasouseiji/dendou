@@ -202,7 +202,17 @@ class ShopScraping{
 			print "db接続エラー\n";
 			exit(	$error->getMessage()	);
 		}
-		$stmt=$PDO->prepare("INSERT INTO t001_AllShouhinList ");
+		$stmt=$PDO->prepare("INSERT INTO t001_AllShouhinList (tenmei,year,mongon,zeinuki_kakaku,zeikomi_kakaku,name,frame_size,wheel_size,index_No) VALUES(:tenmei,:year,:mongon,:zeinuki_kakaku,:zeikomi_kakaku,name,:frame_size,:wheel_size,:index_No);");
+		$stmt->bindvalue(':tenmei',$tenmei);
+		$stmt->bindvalue(':year',$year);
+		$stmt->bindvalue(':mongon',$mongon);
+		$stmt->bindvalue(':zeinuki_kakaku',$zeinuki_kakaku);
+		$stmt->bindvalue(':zeikomi_kakaku',$zeikomi_kakaku);
+		$stmt->bindvalue(':name',$name);
+		$stmt->bindvalue(':frame_size',$frame_size);
+		$stmt->bindvalue(':wheel_size',$wheel_size);
+		$stmt->bindvalue(':index_No',$index_No);
+		$stmt->excute();
 
 		return;
 	}
