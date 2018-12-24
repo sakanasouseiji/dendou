@@ -200,9 +200,9 @@ class ShopScraping{
 
 		}catch(PDOException $error){
 			print "db接続エラー\n";
-			exit($error->getMessage());
+			exit(	$error->getMessage()	);
 		}
-
+		$stmt=$PDO->prepare("INSERT INTO t001_AllShouhinList ");
 
 		return;
 	}
