@@ -68,8 +68,9 @@ class ShopScraping{
 	public	$dbName;
 	public	$dbUser;
 	public	$dbPass;	
+	public	$PDO;	
 	function __construct($shop){
-		require_once("dbConfig.php");
+		require("dbConfig.php");
 		
 		//変数の代入
 		$this->shop=$shop;
@@ -82,6 +83,8 @@ class ShopScraping{
 		
 		print "取得日".date("Ymd")."\r\n";
 		$page=$this->shop->FirstPage;
+
+		$this->dbOpen();
 
 		do{
 			$pageResult=$this->pageScraping($page);
@@ -104,6 +107,7 @@ class ShopScraping{
 
 		file_put_contents($this->shop->fileName.'Result'.date("Ymd").'.csv',$this->printResult,FILE_APPEND|LOCK_EX);
 
+		$this->dbClose();
 		return;
 
 	}
@@ -175,8 +179,8 @@ class ShopScraping{
 			//年式取得できない場合暫定で0000を入れる
 			$lineResult["年式"]=(array_key_exists(0,$nenshiki)	)?$nenshiki[0]:"0000";
 			//print_r($itemName);
-			$lineResult["文言"]=$itemName[0];
-			$lineResult["税抜"]=(	isset($zeinukiPrice[0])	)?$zeinukiPrice[0]:"";
+			$lineResult["文言"]=trim($itemName[0]);
+			$lineResult["税抜"]=(	!empty($zeinukiPrice[0])	)?$zeinukiPrice[0]:0;
 			$lineResult["税込"]=$zeikomiPrice[0]."\n";
 
 			$pageResult[]=$lineResult;
@@ -185,43 +189,65 @@ class ShopScraping{
 		//print_r( $pageResult);
 		return $pageResult;
 	}
-	function dbWrite($pageResult){
-
-		//return;
-
-		//
-		if(		$pageResult!=false or $pageResult!=0	){
-			return;
-		}	
-
-		
+	
+	function dbOpen(){
 		$host=$this->host;
 		$dbName=$this->dbName;
 		$dbUser=$this->dbUser;
 		$dbPass=$this->dbPass;
 
-		//db書き込み
 		try{
-			$PDO=new PDO("mysql:host=".$host.";dbname=".$dbName,$dbUser,$dbPass);
+			$this->PDO=new PDO("mysql:host=".$host.";dbname=".$dbName,$dbUser,$dbPass);
 
 		}catch(PDOException $error){
 			print "db接続エラー\n";
 			exit(	$error->getMessage()	);
 		}
-		$sql=	"INSERT INTO t001_AllShouhinList ".
- 				"(tenmei,year,mongon,zeinuki_kakaku,zeikomi_kakaku) ".
-				"VALUES(:tenmei,:year,:mongon,:zeinuki_kakaku,:zeikomi_kakaku)";
-		$stmt=$PDO->prepare($sql);
-		$stmt->bindvalue(':tenmei',$pageResult["店名"]);
-		$stmt->bindvalue(':year',$pageResult["年式"]);
-		$stmt->bindvalue(':mongon',$pageResult["文言"]);
-		$stmt->bindvalue(':zeinuki_kakaku',$pageResult["税抜"]);
-		$stmt->bindvalue(':zeikomi_kakaku',$pageResult["税込"]);
-		$stmt->excute();
+		print "接続完了";
+		return;
+	}
+	function dbClose(){
+		print "dbClose\n";
+		$this->PDO=null;	
+	}
+	function dbWrite($pageResult){
 
+		//print_r($pageResult);
+		//return;
+
+		//
+		if(	!is_array($pageResult)	or	$pageResult==false or $pageResult==0	){
+			return;
+		}	
+
+
+		//db書き込み
+		foreach($pageResult as $lineResult){
+			//print_r($lineResult);
+			$sql=	"INSERT INTO t001_AllShouhinList ".
+					"(tenmei,year,mongon,zeinuki_kakaku,zeikomi_kakaku,touroku_date) ".
+					"VALUES( :tenmei , :year , :mongon , :zeinuki_kakaku , :zeikomi_kakaku , DATE(now())	)";
+			$stmt=$this->PDO->prepare($sql);
+			$stmt->bindvalue(':tenmei',$lineResult["店名"],PDO::PARAM_STR);
+			$stmt->bindvalue(':year',$lineResult["年式"],PDO::PARAM_STR);
+			$stmt->bindvalue(':mongon',$lineResult["文言"],PDO::PARAM_STR);
+			$stmt->bindvalue(':zeinuki_kakaku',$lineResult["税抜"],PDO::PARAM_INT);
+			$stmt->bindvalue(':zeikomi_kakaku',$lineResult["税込"],PDO::PARAM_INT);
+			$res=$stmt->execute();
+			if($res){
+				//print "true ".$res."line comp\n";
+			}else{
+
+				print "false!\n";
+
+				print	"INSERT INTO t001_AllShouhinList ".
+						"(tenmei,year,mongon,zeinuki_kakaku,zeikomi_kakaku,touroku_date) ".
+						"VALUES( ".$lineResult['店名']." , ".$lineResult['年式']." , ".$lineResult['文言']." , ".$lineResult['税抜']." , ".$lineResult['税込']." , DATE(now())	)\n";
+			}	
+			$stmt=null;
+		}
 		return;
 	}
 
 }
-
 ?>
