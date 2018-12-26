@@ -184,7 +184,7 @@ class ShopScraping{
 
 			//年式取得できない場合暫定で0000を入れる
 			$lineResult["年式"]=(array_key_exists(0,$nenshiki)	)?$nenshiki[0]:"0000";
-			//print_r($itemName);
+			//print_($itemName);
 			$lineResult["文言"]=trim($itemName[0]);
 			$lineResult["税抜"]=(	!empty($zeinukiPrice[0])	)?$zeinukiPrice[0]:0;
 			$lineResult["税込"]=$zeikomiPrice[0];
