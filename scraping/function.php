@@ -69,6 +69,7 @@ class ShopScraping{
 	public	$dbUser;
 	public	$dbPass;	
 	public	$PDO;	
+	public	$ScrapingErrMes="";	
 	function __construct($shop){
 		require("dbConfig.php");
 		
@@ -95,7 +96,7 @@ class ShopScraping{
 				foreach($pageResult as $ireko){
 					$ireko=@implode(",",$ireko);
 					str_replace(	"\n,","\n",$ireko	);
-					$this->printResult.=$ireko;
+					$this->printResult.=$ireko."\n";
 				}
 			}
 
@@ -106,6 +107,10 @@ class ShopScraping{
 		}while(	$pageResult!=false or $pageResult!=0	);	
 
 		file_put_contents($this->shop->fileName.'Result'.date("Ymd").'.csv',$this->printResult,FILE_APPEND|LOCK_EX);
+
+		if(	$this->ScrapingErrMes!=""	){
+			file_put_contents("ScrapingErrMes".date('Ymd').".sql",$this->ScrapingErrMes,FILE_APPEND|LOCK_EX);
+		}
 
 		$this->dbClose();
 		return;
@@ -165,7 +170,8 @@ class ShopScraping{
 			$itemName[0]=mb_convert_kana(	str_replace($itemDeletePattern,"",$itemName[0])	,'KVas','UTF-8'	);
 			$zeinukiPrice[0]=@str_replace($zeinukiDeletePattern,"",$zeinukiPrice[0]);
 			$zeikomiPrice[0]=str_replace($zeikomiDeletePattern,"",$zeikomiPrice[0]);
-			preg_match("/20[0-9][0-9][-ー\/]?[0-9]{0,4}/",$itemName[0],$nenshiki);
+			//preg_match("/20[0-9][0-9][-ー\/]?[0-9]{0,4}/",$itemName[0],$nenshiki);
+			preg_match("/20[0-9]{2}/",$itemName[0],$nenshiki);
 
 
 			//,を取る
@@ -181,7 +187,7 @@ class ShopScraping{
 			//print_r($itemName);
 			$lineResult["文言"]=trim($itemName[0]);
 			$lineResult["税抜"]=(	!empty($zeinukiPrice[0])	)?$zeinukiPrice[0]:0;
-			$lineResult["税込"]=$zeikomiPrice[0]."\n";
+			$lineResult["税込"]=$zeikomiPrice[0];
 
 			$pageResult[]=$lineResult;
 		}
@@ -238,11 +244,12 @@ class ShopScraping{
 				//print "true ".$res."line comp\n";
 			}else{
 
-				print "false!\n";
-
-				print	"INSERT INTO t001_AllShouhinList ".
+				$err=	"false!\n".
+						"INSERT INTO t001_AllShouhinList ".
 						"(tenmei,year,mongon,zeinuki_kakaku,zeikomi_kakaku,touroku_date) ".
-						"VALUES( ".$lineResult['店名']." , ".$lineResult['年式']." , ".$lineResult['文言']." , ".$lineResult['税抜']." , ".$lineResult['税込']." , DATE(now())	)\n";
+						"VALUES( '".$lineResult['店名']."','".$lineResult['年式']."','".$lineResult['文言']."',".$lineResult['税抜'].",".$lineResult['税込'].",DATE(now())	)\n";
+				print $err;
+				$this->ScrapingErrMes.=$err;
 			}	
 			$stmt=null;
 		}
