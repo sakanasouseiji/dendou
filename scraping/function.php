@@ -177,7 +177,7 @@ class ShopScraping{
 			//print_r($itemName);
 			$lineResult["文言"]=$itemName[0];
 			$lineResult["税抜"]=(	isset($zeinukiPrice[0])	)?$zeinukiPrice[0]:"";
-			$lineResult["税込み"]=$zeikomiPrice[0]."\n";
+			$lineResult["税込"]=$zeikomiPrice[0]."\n";
 
 			$pageResult[]=$lineResult;
 		}
@@ -187,8 +187,14 @@ class ShopScraping{
 	}
 	function dbWrite($pageResult){
 
-		return;
+		//return;
 
+		//
+		if(		$pageResult!=false or $pageResult!=0	){
+			return;
+		}	
+
+		
 		$host=$this->host;
 		$dbName=$this->dbName;
 		$dbUser=$this->dbUser;
@@ -202,16 +208,15 @@ class ShopScraping{
 			print "db接続エラー\n";
 			exit(	$error->getMessage()	);
 		}
-		$stmt=$PDO->prepare("INSERT INTO t001_AllShouhinList (tenmei,year,mongon,zeinuki_kakaku,zeikomi_kakaku,name,frame_size,wheel_size,index_No) VALUES(:tenmei,:year,:mongon,:zeinuki_kakaku,:zeikomi_kakaku,name,:frame_size,:wheel_size,:index_No);");
-		$stmt->bindvalue(':tenmei',$tenmei);
-		$stmt->bindvalue(':year',$year);
-		$stmt->bindvalue(':mongon',$mongon);
-		$stmt->bindvalue(':zeinuki_kakaku',$zeinuki_kakaku);
-		$stmt->bindvalue(':zeikomi_kakaku',$zeikomi_kakaku);
-		$stmt->bindvalue(':name',$name);
-		$stmt->bindvalue(':frame_size',$frame_size);
-		$stmt->bindvalue(':wheel_size',$wheel_size);
-		$stmt->bindvalue(':index_No',$index_No);
+		$sql=	"INSERT INTO t001_AllShouhinList ".
+ 				"(tenmei,year,mongon,zeinuki_kakaku,zeikomi_kakaku) ".
+				"VALUES(:tenmei,:year,:mongon,:zeinuki_kakaku,:zeikomi_kakaku)";
+		$stmt=$PDO->prepare($sql);
+		$stmt->bindvalue(':tenmei',$pageResult["店名"]);
+		$stmt->bindvalue(':year',$pageResult["年式"]);
+		$stmt->bindvalue(':mongon',$pageResult["文言"]);
+		$stmt->bindvalue(':zeinuki_kakaku',$pageResult["税抜"]);
+		$stmt->bindvalue(':zeikomi_kakaku',$pageResult["税込"]);
 		$stmt->excute();
 
 		return;
