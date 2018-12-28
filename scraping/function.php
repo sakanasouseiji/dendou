@@ -79,7 +79,8 @@ class ShopScraping{
 
 		
 
-	}
+	}	//__construct終了
+
 	function All(){
 		
 		print "取得日".date("Ymd")."\r\n";
@@ -88,7 +89,14 @@ class ShopScraping{
 		$this->dbOpen();
 
 		do{
+
+			//各ページの取得結果
 			$pageResult=$this->pageScraping($page);
+
+			//車種のひも付け
+			$pageResult=$this->himotuke($pageResult);
+
+			//db書き込み
 			$this->dbWrite($pageResult);
 
 			//ここからpageResultをcsvにするために再度分割
@@ -115,7 +123,8 @@ class ShopScraping{
 		$this->dbClose();
 		return;
 
-	}
+	}	//All終了
+
 	function pageScraping($page){
 		$shopName=$this->shop->shopName;
 		$firstPattern=$this->shop->firstPattern;
@@ -194,7 +203,7 @@ class ShopScraping{
 		//print_r( $lineResult);
 		//print_r( $pageResult);
 		return $pageResult;
-	}
+	}	//pageScraping終了
 	
 	function dbOpen(){
 		$host=$this->host;
@@ -211,11 +220,13 @@ class ShopScraping{
 		}
 		print "接続完了";
 		return;
-	}
+	}	//dbOpen終了
+
 	function dbClose(){
 		print "dbClose\n";
 		$this->PDO=null;	
-	}
+	}	//dbClose終了
+
 	function dbWrite($pageResult){
 
 		//print_r($pageResult);
@@ -254,7 +265,11 @@ class ShopScraping{
 			$stmt=null;
 		}
 		return;
+	}	//dbWrite終了
+
+	function himotuke($pageResult){
+		return $pageResult;
 	}
 
-}
+}	//class終了
 ?>
