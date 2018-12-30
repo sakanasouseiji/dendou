@@ -242,14 +242,15 @@ class ShopScraping{
 		foreach($pageResult as $lineResult){
 			//print_r($lineResult);
 			$sql=	"INSERT INTO t001_AllShouhinList ".
-					"(tenmei,year,mongon,zeinuki_kakaku,zeikomi_kakaku,touroku_date) ".
-					"VALUES( :tenmei , :year , :mongon , :zeinuki_kakaku , :zeikomi_kakaku , DATE(now())	)";
+					"(tenmei,year,mongon,zeinuki_kakaku,zeikomi_kakaku,index_No,touroku_date) ".
+					"VALUES( :tenmei , :year , :mongon , :zeinuki_kakaku , :zeikomi_kakaku , :index_No , DATE(now())	)";
 			$stmt=$this->PDO->prepare($sql);
 			$stmt->bindvalue(':tenmei',$lineResult["店名"],PDO::PARAM_STR);
 			$stmt->bindvalue(':year',$lineResult["年式"],PDO::PARAM_STR);
 			$stmt->bindvalue(':mongon',$lineResult["文言"],PDO::PARAM_STR);
 			$stmt->bindvalue(':zeinuki_kakaku',$lineResult["税抜"],PDO::PARAM_INT);
 			$stmt->bindvalue(':zeikomi_kakaku',$lineResult["税込"],PDO::PARAM_INT);
+			$stmt->bindvalue(':index_No',$lineResult["index_No"],PDO::PARAM_INT);
 			$res=$stmt->execute();
 			if($res){
 				//print "true ".$res."line comp\n";
@@ -268,6 +269,33 @@ class ShopScraping{
 	}	//dbWrite終了
 
 	function himotuke($pageResult){
+
+		if(	!is_array($pageResult)	or	$pageResult==false or $pageResult==0	){
+			return;
+		}	
+		//return $pageResult;
+
+
+		//紐付けのその１(index)
+		$sql=	"SELECT `index_No`,`品番`,`正規表現名`,`フレームサイズ`,`タイヤサイズ`,`年度` FROM index_ryaku";
+		$stmt=$this->PDO->query($sql);
+		$result=$stmt->fetchall(PDO::FETCH_ASSOC);
+		//print_r($result);
+		$himotuke_index=$result;
+
+ 
+		foreach($pageResult as $key => $lineResult){
+			foreach(	$himotuke_index as $shashu	){
+				if(	preg_match($shashu["正規表現名"],$lineResult["文言"])	){
+					$pageResult[$key]["index_No"]=$shashu["index_No"];
+				}
+			}
+			//print_r($lineResult);
+		}
+		//print_r($pageResult);
+		//exit();
+		//ひもつけその１ここまで
+
 		return $pageResult;
 	}
 
