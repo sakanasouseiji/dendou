@@ -277,25 +277,29 @@ class ShopScraping{
 
 
 		//紐付けのその１(index)
-		$sql=	"SELECT `index_No`,`品番`,`正規表現名`,`フレームサイズ`,`タイヤサイズ`,`年度` FROM index_ryaku";
+		$sql=	"SELECT `index_No`,`品番`,`正規表現名`,`フレームサイズ`,`タイヤサイズ`,`年度`,`色`,`正規表現色` FROM jitensha_index";
 		$stmt=$this->PDO->query($sql);
 		$result=$stmt->fetchall(PDO::FETCH_ASSOC);
-		//print_r($result);
 		$himotuke_index=$result;
 
  
 		foreach($pageResult as $key => $lineResult){
 			foreach(	$himotuke_index as $shashu	){
-				if(	preg_match($shashu["正規表現名"],$lineResult["文言"])	){
+				/*		色とフレームサイズとタイヤサイズ,正規表現が完璧になってから
+				if(	preg_match($shashu["正規表現名"],$lineResult["文言"])==1	&&	
+					preg_match($shashu["正規表現色"],$lineResult["文言"])==1	&&	//	||	$lineResult("店名")!="イオンバイク"	)	&&		//暫定措置	
+					(strpos($lineResult["文言"],$shashu["タイヤサイズ"])!==false	||	strpos($lineResult["文言"],$shashu["フレームサイズ"])!==false	)
+					){
+					$pageResult[$key]["index_No"]=$shashu["index_No"];
+				}
+				*/
+				
+				if(	preg_match($shashu["正規表現名"],$lineResult["文言"])==1	){
 					$pageResult[$key]["index_No"]=$shashu["index_No"];
 				}
 			}
-			//print_r($lineResult);
 		}
-		//print_r($pageResult);
-		//exit();
 		//ひもつけその１ここまで
-
 		return $pageResult;
 	}
 
