@@ -180,8 +180,12 @@ class ShopScraping{
 			$zeinukiPrice[0]=@str_replace($zeinukiDeletePattern,"",$zeinukiPrice[0]);
 			$zeikomiPrice[0]=str_replace($zeikomiDeletePattern,"",$zeikomiPrice[0]);
 			//preg_match("/20[0-9][0-9][-ー\/]?[0-9]{0,4}/",$itemName[0],$nenshiki);
-			preg_match("/20[0-9]{2}/",$itemName[0],$nenshiki);
-
+			if(	preg_match("/(20[0-9]{2}-20[0-9]{2}年\(継続\)|20[0-9]{2})/ius",$itemName[0],$nenshiki)!=1	){
+				if(	preg_match("【アウトレットSALE】[0-9]{2}/ius",$itemName[0],$nenshiki)==1	){
+					$nenshiki[0]="20".substr($nenshiki[0],-2,2);
+				}
+			}
+			
 
 			//,を取る
 			$zeinukiPrice[0]=@str_replace(",","",$zeinukiPrice[0]);
@@ -193,7 +197,7 @@ class ShopScraping{
 
 			//年式取得できない場合暫定で0000を入れる
 			$lineResult["年式"]=(array_key_exists(0,$nenshiki)	)?$nenshiki[0]:"0000";
-			//print_($itemName);
+			//print_r($itemName);
 			$lineResult["文言"]=trim($itemName[0]);
 			$lineResult["税抜"]=(	!empty($zeinukiPrice[0])	)?$zeinukiPrice[0]:0;
 			$lineResult["税込"]=$zeikomiPrice[0];
@@ -293,9 +297,12 @@ class ShopScraping{
 					$pageResult[$key]["index_No"]=$shashu["index_No"];
 				}
 				*/
-				
-				if(	preg_match($shashu["正規表現名"],$lineResult["文言"])==1	){
+				if(	preg_match($shashu["正規表現名"],$lineResult["文言"])==1	&&
+					//(	strpos($lineResult["年式"],$shashu["年度"])	&&	isset($shashu["年度"])	)
+					(	$lineResult["年式"]==$shashu["年度"]	&&	isset($shashu["年度"]	)	)
+				){
 					$pageResult[$key]["index_No"]=$shashu["index_No"];
+					break;
 				}
 			}
 		}
