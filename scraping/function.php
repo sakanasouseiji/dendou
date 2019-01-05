@@ -181,7 +181,7 @@ class ShopScraping{
 			$zeikomiPrice[0]=str_replace($zeikomiDeletePattern,"",$zeikomiPrice[0]);
 			//preg_match("/20[0-9][0-9][-ー\/]?[0-9]{0,4}/",$itemName[0],$nenshiki);
 			if(	preg_match("/(20[0-9]{2}-20[0-9]{2}年\(継続\)|20[0-9]{2})/ius",$itemName[0],$nenshiki)!=1	){
-				if(	preg_match("【アウトレットSALE】[0-9]{2}/ius",$itemName[0],$nenshiki)==1	){
+				if(	preg_match("/【アウトレットSALE】[0-9]{2}/ius",$itemName[0],$nenshiki)==1	){
 					$nenshiki[0]="20".substr($nenshiki[0],-2,2);
 				}
 			}
@@ -288,6 +288,7 @@ class ShopScraping{
 
  
 		foreach($pageResult as $key => $lineResult){
+			//print_r($lineResult);
 			foreach(	$himotuke_index as $shashu	){
 				/*		色とフレームサイズとタイヤサイズ,正規表現が完璧になってから
 				if(	preg_match($shashu["正規表現名"],$lineResult["文言"])==1	&&	
@@ -297,6 +298,8 @@ class ShopScraping{
 					$pageResult[$key]["index_No"]=$shashu["index_No"];
 				}
 				*/
+				//print "lineResult年式の型".gettype(	$lineResult["年式"]	)."値".$lineResult["年式"]."\n";
+				//print "shashu正規表現名".$shashu["正規表現名"]." shashu年度の型".gettype(	$shashu["年度"]	)."値".$shashu["年度"]."\n";
 				if(	preg_match($shashu["正規表現名"],$lineResult["文言"])==1	&&
 					//(	strpos($lineResult["年式"],$shashu["年度"])	&&	isset($shashu["年度"])	)
 					(	$lineResult["年式"]==$shashu["年度"]	&&	isset($shashu["年度"]	)	)
@@ -305,6 +308,7 @@ class ShopScraping{
 					break;
 				}
 			}
+			//exit();
 		}
 		//ひもつけその１ここまで
 		return $pageResult;
