@@ -302,7 +302,8 @@ class ShopScraping{
 				//print "shashu正規表現名".$shashu["正規表現名"]." shashu年度の型".gettype(	$shashu["年度"]	)."値".$shashu["年度"]."\n";
 				if(	preg_match($shashu["正規表現名"],$lineResult["文言"])==1	&&
 					(	(	$lineResult["年式"]==$shashu["年度"]	&&	isset($shashu["年度"]	)	)	||	
-						(	strpos($lineResult["文言"],$shashu["品番"])	&&	isset($shashu["品番"])	&&	$shashu["メーカー"]!="ヤマハ"	&&	isset($shashu["メーカー"])	)	)
+						(	strpos($lineResult["文言"],$shashu["品番"])	&&	isset($shashu["品番"])	&&	$shashu["メーカー"]!="ヤマハ"	&&	isset($shashu["メーカー"])	)	||	
+						(	$shashu["年度"]=="0000"		)	)
 				){
 					$pageResult[$key]["index_No"]=$shashu["index_No"];
 					break;
