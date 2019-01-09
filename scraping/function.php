@@ -181,7 +181,7 @@ class ShopScraping{
 			$zeikomiPrice[0]=str_replace($zeikomiDeletePattern,"",$zeikomiPrice[0]);
 			//preg_match("/20[0-9][0-9][-ー\/]?[0-9]{0,4}/",$itemName[0],$nenshiki);
 			if(	preg_match("/(20[0-9]{2}-20[0-9]{2}年\(継続\)|20[0-9]{2})/ius",$itemName[0],$nenshiki)!=1	){
-				if(	preg_match("/【アウトレットSALE】[0-9]{2}/ius",$itemName[0],$nenshiki)==1	){
+				if(	preg_match("/【アウトレットSALE】[0-9]{2}/ius",$itemName[0],$nenshiki)==1	){				//あさひのアウトレット対応
 					$nenshiki[0]="20".substr($nenshiki[0],-2,2);
 				}
 			}
@@ -281,14 +281,13 @@ class ShopScraping{
 
 
 		//紐付けのその１(index)
-		$sql=	"SELECT `index_No`,`メーカー`,`品番`,`正規表現名`,`フレームサイズ`,`タイヤサイズ`,`年度`,`色`,`正規表現色` FROM jitensha_index";
+		$sql=	"SELECT `index_No`,`メーカー`,`品番`,`正規表現名`,`フレームサイズ`,`タイヤサイズ`,`年度`,`単一商品フラグ`,`色`,`正規表現色` FROM jitensha_index";
 		$stmt=$this->PDO->query($sql);
 		$result=$stmt->fetchall(PDO::FETCH_ASSOC);
 		$himotuke_index=$result;
 
  
 		foreach($pageResult as $key => $lineResult){
-			//print_r($lineResult);
 			foreach(	$himotuke_index as $shashu	){
 				/*		色とフレームサイズとタイヤサイズ,正規表現が完璧になってから
 				if(	preg_match($shashu["正規表現名"],$lineResult["文言"])==1	&&	
@@ -301,15 +300,18 @@ class ShopScraping{
 				//print "lineResult年式の型".gettype(	$lineResult["年式"]	)."値".$lineResult["年式"]."\n";
 				//print "shashu正規表現名".$shashu["正規表現名"]." shashu年度の型".gettype(	$shashu["年度"]	)."値".$shashu["年度"]."\n";
 				if(	preg_match($shashu["正規表現名"],$lineResult["文言"])==1	&&
-					(	(	$lineResult["年式"]==$shashu["年度"]	&&	isset($shashu["年度"]	)	)	||	
-						(	strpos($lineResult["文言"],$shashu["品番"])	&&	isset($shashu["品番"])	&&	$shashu["メーカー"]!="ヤマハ"	&&	isset($shashu["メーカー"])	)	||	
-						(	$shashu["年度"]=="0000"		)	)
+					(	(	$lineResult["年式"]==$shashu["年度"]	&&	isset($shashu["年度"])		||	
+							strpos($lineResult["文言"],$shashu["品番"])	&&	isset($shashu["品番"])	&&	$shashu["メーカー"]!="ヤマハ"	)	||	
+							isset($shashu["単一商品フラグ"])	&&	$shashu["単一商品フラグ"]>=1	)	
 				){
+					//print ($shashu["単一商品フラグ"])?"true":"false";
+					//print_r($shashu);
+					//print_r($lineResult);
+					//exit();
 					$pageResult[$key]["index_No"]=$shashu["index_No"];
-					break;
+					break 1;
 				}
 			}
-			//exit();
 		}
 		//ひもつけその１ここまで
 		return $pageResult;
