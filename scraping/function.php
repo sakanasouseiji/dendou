@@ -185,8 +185,7 @@ class ShopScraping{
 					$nenshiki[0]="20".substr($nenshiki[0],-2,2);
 				}
 			}
-			
-
+			$itemName[0]=preg_replace("/(20[0-9]{2}-20[0-9]{2}年\(継続\)|20[0-9]{2}|【アウトレットSALE】[0-9]{2})/ius","",$itemName[0]);
 			//,を取る
 			$zeinukiPrice[0]=@str_replace(",","",$zeinukiPrice[0]);
 			$zeikomiPrice[0]=@str_replace(",","",$zeikomiPrice[0]);
@@ -281,7 +280,7 @@ class ShopScraping{
 
 
 		//紐付けのその１(index)
-		$sql=	"SELECT `index_No`,`メーカー`,`品番`,`正規表現名`,`フレームサイズ`,`タイヤサイズ`,`年度`,`単一商品フラグ`,`色`,`正規表現色` FROM jitensha_index";
+		$sql=	"SELECT `index_No`,`メーカー`,`品番`,`正規表現名`,`フレームサイズ`,`タイヤサイズ`,`単一タイヤサイズ`,`年度`,`単一商品フラグ`,`色`,`正規表現色` FROM jitensha_index";
 		$stmt=$this->PDO->query($sql);
 		$result=$stmt->fetchall(PDO::FETCH_ASSOC);
 		$himotuke_index=$result;
@@ -289,20 +288,13 @@ class ShopScraping{
  
 		foreach($pageResult as $key => $lineResult){
 			foreach(	$himotuke_index as $shashu	){
-				/*		色とフレームサイズとタイヤサイズ,正規表現が完璧になってから
-				if(	preg_match($shashu["正規表現名"],$lineResult["文言"])==1	&&	
-					preg_match($shashu["正規表現色"],$lineResult["文言"])==1	&&	//	||	$lineResult("店名")!="イオンバイク"	)	&&		//暫定措置	
-					(strpos($lineResult["文言"],$shashu["タイヤサイズ"])!==false	||	strpos($lineResult["文言"],$shashu["フレームサイズ"])!==false	)
-					){
-					$pageResult[$key]["index_No"]=$shashu["index_No"];
-				}
-				*/
-				//print "lineResult年式の型".gettype(	$lineResult["年式"]	)."値".$lineResult["年式"]."\n";
-				//print "shashu正規表現名".$shashu["正規表現名"]." shashu年度の型".gettype(	$shashu["年度"]	)."値".$shashu["年度"]."\n";
 				if(	preg_match($shashu["正規表現名"],$lineResult["文言"])==1	&&
 					(	(	$lineResult["年式"]==$shashu["年度"]	&&	isset($shashu["年度"])		||	
-							strpos($lineResult["文言"],$shashu["品番"])	&&	isset($shashu["品番"])	&&	$shashu["メーカー"]!="ヤマハ"	)	||	
-							isset($shashu["単一商品フラグ"])	&&	$shashu["単一商品フラグ"]>=1	)	
+							@strpos($lineResult["文言"],$shashu["品番"])	&&	isset($shashu["品番"])	&&	$shashu["メーカー"]!="ヤマハ"	)	||	
+							isset($shashu["単一商品フラグ"])	&&	$shashu["単一商品フラグ"]==1	)	&&
+					(	(	@strpos($lineResult["文言"],$shashu["タイヤサイズ"])		||	$shashu["単一タイヤサイズ"]==1	)	||
+						(	@strpos($lineResult["文言"],$shashu["フレームサイズ"])	)	)	&&
+						(	preg_match($shashu["正規表現色"],$lineResult["文言"])==1	)	
 				){
 					//print ($shashu["単一商品フラグ"])?"true":"false";
 					//print_r($shashu);
