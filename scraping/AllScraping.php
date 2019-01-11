@@ -85,11 +85,17 @@ class AsahiShop{
 	//ここからあさひ用取得パターン
 	//最初に枠取得用パターン
 	public	$firstPattern='/list_item__product sli_list_col2(.*?)<\/div><\/div>/ius';
+
+	public	$linkPattern='<a data-tb-sid="st_title-link" class="list_item__product__name" rel="nofollow" href="(.*)">';
+	public	$linkDeletePattern=array('<a data-tb-sid="st_title-link" class="list_item__product__name" rel="nofollow" href=','>');
+	
+	/*
 	//商品名取得用パターン
 	public	$itemPattern='/data-sli-test=\"resultlink\">(.*?)<\/a>/ius';
 	//値段取得用パターン
 	public	$zeinukiPattern='';
 	public	$zeikomiPattern='/sli_price\">(.*?)<\/span>/ius';
+	*/
 
 	//削除用パターン
 	//商品名用
