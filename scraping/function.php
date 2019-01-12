@@ -134,6 +134,12 @@ class ShopScraping{
 		$itemDeletePattern=$this->shop->itemDeletePattern;
 		$zeinukiDeletePattern=$this->shop->zeinukiDeletePattern;
 		$zeikomiDeletePattern=$this->shop->zeikomiDeletePattern;
+		if(	isset($this->shop->linkPattern)	){
+			$linkPattern=$this->shop->linkPattern;
+			$linkPattern=$this->shop->linkDeletePattern;
+			$kobetuColorPattern=$this->shop->kobetuColorPattern;
+		}
+
 		$pageResult=array();
 		$lineResult=array();
 
@@ -151,10 +157,13 @@ class ShopScraping{
 		//ここにアクセスすればクッキーにフラグが立つというページ
 		$scrap=scraping($url);
 
+
+
 		//スクレイピングファイル出力(デバッグ用)
 		//file_put_contents('pageScrap'.$page.'.html',$scrap,LOCK_EX);
 
 		//ここから抽出
+
 
 		$endFlag=preg_match_all($firstPattern,$scrap,$array);
 		if(	$endFlag==0 or	$endFlag==false	){
@@ -170,8 +179,23 @@ class ShopScraping{
 		$array=$array[0];
 
 		//file_put_contents('array'.$page.'.html',$array,LOCK_EX);
-
+		$i=0;
 		foreach($array as $key => $cell){
+			$i++;
+			//個別ページ確認・移動・再スクレイピング
+			if(	isset($linkPattern)	){
+				if(	preg_match($linkPattern,$cell,$link	){
+					$link=str_replace($linkDeletePattern,"",$link);
+					$kobetuPage=scraping($link);
+					$count=preg_match_all($kobetuColorPattern,$kobetuPage,$kobetuArray);
+					array_splice($array,$i,0,$kobetuArray);
+					foreach($kobetuArray as $colorKey =>
+				}
+				
+			}
+			//
+
+
 			preg_match($itemPattern,$cell,$itemName);
 			@preg_match($zeinukiPattern,$cell,$zeinukiPrice);
 			@preg_match($zeikomiPattern,$cell,$zeikomiPrice);
