@@ -70,6 +70,8 @@ class ShopScraping{
 	public	$dbPass;	
 	public	$PDO;	
 	public	$ScrapingErrMes="";	
+
+	//
 	function __construct($shop){
 		require("dbConfig.php");
 		
@@ -81,6 +83,7 @@ class ShopScraping{
 
 	}	//__construct終了
 
+	//全体処理
 	function All(){
 		
 		print "取得日".date("Ymd")."\r\n";
@@ -93,8 +96,12 @@ class ShopScraping{
 			//各ページの取得結果
 			$pageResult=$this->pageScraping($page);
 
-			//車種のひも付け
+			//個別ページスクレイピング
+			$pageResult=$this->kobetu($pageResult);
+
+			//車種の紐付け
 			$pageResult=$this->himotuke($pageResult);
+
 
 			//db書き込み
 			$this->dbWrite($pageResult);
@@ -114,8 +121,9 @@ class ShopScraping{
 			$page++;
 		}while(	$pageResult!=false or $pageResult!=0	);	
 
-		file_put_contents($this->shop->fileName.'Result'.date("Ymd").'.csv',$this->printResult,FILE_APPEND|LOCK_EX);
-
+		/*		再取得前結果の出力
+			file_put_contents($this->shop->fileName.'Result'.date("Ymd").'.csv',$this->printResult,FILE_APPEND|LOCK_EX);
+	 	 */
 		if(	$this->ScrapingErrMes!=""	){
 			file_put_contents("ScrapingErrMes".date('Ymd').".sql",$this->ScrapingErrMes,FILE_APPEND|LOCK_EX);
 		}
@@ -125,6 +133,7 @@ class ShopScraping{
 
 	}	//All終了
 
+	//一覧ページスクレイピング
 	function pageScraping($page){
 		$shopName=$this->shop->shopName;
 		$firstPattern=$this->shop->firstPattern;
@@ -136,10 +145,9 @@ class ShopScraping{
 		$zeikomiDeletePattern=$this->shop->zeikomiDeletePattern;
 		if(	isset($this->shop->linkPattern)	){
 			$linkPattern=$this->shop->linkPattern;
-			$linkPattern=$this->shop->linkDeletePattern;
+			$linkDeletePattern=$this->shop->linkDeletePattern;
 			$kobetuColorPattern=$this->shop->kobetuColorPattern;
 		}
-
 		$pageResult=array();
 		$lineResult=array();
 
@@ -179,28 +187,16 @@ class ShopScraping{
 		$array=$array[0];
 
 		//file_put_contents('array'.$page.'.html',$array,LOCK_EX);
-		$i=0;
 		foreach($array as $key => $cell){
-			$i++;
-			//個別ページ確認・移動・再スクレイピング
-			if(	isset($linkPattern)	){
-				if(	preg_match($linkPattern,$cell,$link	){
-					$link=str_replace($linkDeletePattern,"",$link);
-					$kobetuPage=scraping($link);
-					$count=preg_match_all($kobetuColorPattern,$kobetuPage,$kobetuArray);
-					array_splice($array,$i,0,$kobetuArray);
-					foreach($kobetuArray as $colorKey =>
-				}
-				
-			}
-			//
 
 
 			preg_match($itemPattern,$cell,$itemName);
+			@preg_match($linkPattern,$cell,$linkURL);
 			@preg_match($zeinukiPattern,$cell,$zeinukiPrice);
 			@preg_match($zeikomiPattern,$cell,$zeikomiPrice);
 
 			$itemName[0]=mb_convert_kana(	str_replace($itemDeletePattern,"",$itemName[0])	,'KVas','UTF-8'	);
+			$linkURL[0]=@str_replace($linkDeletePattern,"",$linkURL[0]);
 			$zeinukiPrice[0]=@str_replace($zeinukiDeletePattern,"",$zeinukiPrice[0]);
 			$zeikomiPrice[0]=str_replace($zeikomiDeletePattern,"",$zeikomiPrice[0]);
 			//preg_match("/20[0-9][0-9][-ー\/]?[0-9]{0,4}/",$itemName[0],$nenshiki);
@@ -221,6 +217,8 @@ class ShopScraping{
 			//年式取得できない場合暫定で0000を入れる
 			$lineResult["年式"]=(array_key_exists(0,$nenshiki)	)?$nenshiki[0]:"0000";
 			//print_r($itemName);
+			//リンク取得で取れなかった場合""を入れる
+			$lineResult["リンク"]=(array_key_exists(0,$linkURL))?$linkURL[0]:"";
 			$lineResult["文言"]=trim($itemName[0]);
 			$lineResult["税抜"]=(	!empty($zeinukiPrice[0])	)?$zeinukiPrice[0]:0;
 			$lineResult["税込"]=$zeikomiPrice[0];
@@ -232,6 +230,7 @@ class ShopScraping{
 		return $pageResult;
 	}	//pageScraping終了
 	
+	//dbオープン
 	function dbOpen(){
 		$host=$this->host;
 		$dbName=$this->dbName;
@@ -249,11 +248,13 @@ class ShopScraping{
 		return;
 	}	//dbOpen終了
 
+	//dbクローズ
 	function dbClose(){
 		print "dbClose\n";
 		$this->PDO=null;	
 	}	//dbClose終了
 
+	//db書き込み
 	function dbWrite($pageResult){
 
 		//print_r($pageResult);
@@ -265,12 +266,12 @@ class ShopScraping{
 		}	
 
 
-		//db書き込み
 		foreach($pageResult as $lineResult){
 			//print_r($lineResult);
 			$sql=	"INSERT INTO t001_AllShouhinList ".
 					"(tenmei,year,mongon,zeinuki_kakaku,zeikomi_kakaku,index_No,touroku_date) ".
-					"VALUES( :tenmei , :year , :mongon , :zeinuki_kakaku , :zeikomi_kakaku , :index_No , DATE(now())	)";
+					"VALUES( :tenmei , :year , :mongon , :zeinuki_kakaku , :zeikomi_kakaku , :index_No ,  DATE(now())	)";
+					//"VALUES( :tenmei , :year , :mongon , :zeinuki_kakaku , :zeikomi_kakaku , :index_No , :linkURL ,  DATE(now())	)";
 			$stmt=$this->PDO->prepare($sql);
 			$stmt->bindvalue(':tenmei',$lineResult["店名"],PDO::PARAM_STR);
 			$stmt->bindvalue(':year',$lineResult["年式"],PDO::PARAM_STR);
@@ -278,6 +279,7 @@ class ShopScraping{
 			$stmt->bindvalue(':zeinuki_kakaku',$lineResult["税抜"],PDO::PARAM_INT);
 			$stmt->bindvalue(':zeikomi_kakaku',$lineResult["税込"],PDO::PARAM_INT);
 			$stmt->bindvalue(':index_No',$lineResult["index_No"],PDO::PARAM_INT);
+			//$stmt->bindvalue(':linkURL',$lineResult["リンク"],PDO::PARAM_INT);
 			$res=$stmt->execute();
 			if($res){
 				//print "true ".$res."line comp\n";
@@ -285,8 +287,9 @@ class ShopScraping{
 
 				$err=	"false!\n".
 						"INSERT INTO t001_AllShouhinList ".
-						"(tenmei,year,mongon,zeinuki_kakaku,zeikomi_kakaku,touroku_date) ".
-						"VALUES( '".$lineResult['店名']."','".$lineResult['年式']."','".$lineResult['文言']."',".$lineResult['税抜'].",".$lineResult['税込'].",DATE(now())	)\n";
+						"(tenmei,year,mongon,zeinuki_kakaku,zeikomi_kakaku,index_No,touroku_date) ".
+						"VALUES( '".$lineResult['店名']."','".$lineResult['年式']."','".$lineResult['文言']."','".$lineResult['税抜']."','".$lineResult['税込']."','".$lineResult['index_No']."',DATE(now())	)\n";
+						//"VALUES( '".$lineResult['店名']."','".$lineResult['年式']."','".$lineResult['文言']."','".$lineResult['税抜']."','".$lineResult['税込']."','".$lineResult['index_No']."','".$lineResult['リンク']."',DATE(now())	)\n";
 				print $err;
 				$this->ScrapingErrMes.=$err;
 			}	
@@ -295,6 +298,7 @@ class ShopScraping{
 		return;
 	}	//dbWrite終了
 
+	//紐付け
 	function himotuke($pageResult){
 
 		if(	!is_array($pageResult)	or	$pageResult==false or $pageResult==0	){
@@ -329,7 +333,37 @@ class ShopScraping{
 				}
 			}
 		}
-		//ひもつけその１ここまで
+		//紐付けその１ここまで
+		return $pageResult;
+	}
+
+	//個別ページ処理
+	function kobetu($pageResult){
+		file_put_contents('pageResult.txt',print_r($pageResult));
+	/*
+		foreach($pageResult as ){
+			
+			
+		}
+		if(	isset($this->shop->linkPattern)	){
+			$linkPattern=$this->shop->linkPattern;
+			$linkPattern=$this->shop->linkDeletePattern;
+			$kobetuColorPattern=$this->shop->kobetuColorPattern;
+		}
+		$i=0;
+			$i++;
+			//個別ページ確認・移動・再スクレイピング
+			if(	isset($linkPattern)	){
+				if(	preg_match($linkPattern,$cell,$link	){
+					$link=str_replace($linkDeletePattern,"",$link);
+					$kobetuPage=scraping($link);
+					$count=preg_match_all($kobetuColorPattern,$kobetuPage,$kobetuArray);
+					array_splice($array,$i,0,$kobetuArray);
+					foreach($kobetuArray as $colorKey =>
+				}
+				
+			}
+	*/
 		return $pageResult;
 	}
 
