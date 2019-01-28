@@ -98,7 +98,7 @@ class ShopScraping{
 
 			//個別ページスクレイピング
 			$pageResult=$this->kobetu($pageResult);
-
+			exit();
 			//車種の紐付け
 			$pageResult=$this->himotuke($pageResult);
 
@@ -339,7 +339,7 @@ class ShopScraping{
 
 	//個別ページ処理
 	function kobetu($pageResult){
-		file_put_contents('pageResult.txt',print_r($pageResult));
+		$this->arrayPut($pageResult,"kobetuMae");
 	/*
 		foreach($pageResult as ){
 			
@@ -365,6 +365,30 @@ class ShopScraping{
 			}
 	*/
 		return $pageResult;
+	}
+
+	//配列のファイル出力
+	function arrayPut($array,$fileName){
+		$midashi="";
+		$honbun="";
+		if(	!is_array($array)	){
+			file_put_contents("error".date('Ymd').".mes","fales!");
+			return false;
+		}
+		foreach($array as $key => $value){
+			if(	!is_array($value)	){
+				$midashi=implode(	",",array_keys($array)	);
+				$honbun=implode(	",",$array	);
+				break 1;
+			}else{ 
+				$midashi="見出し,".implode(	",",array_keys($value)	);
+				$honbun.=$key.",".implode(	",",$value)."\n";	
+			} 
+		}
+		$csv=$midashi."\n".$honbun;
+		file_put_contents($fileName.date('Ymd').".csv",$csv,FILE_APPEND|LOCK_EX);
+		file_put_contents($fileName.date('Ymd').".txt",print_r($array,true),FILE_APPEND|LOCK_EX);
+		return;
 	}
 
 }	//class終了

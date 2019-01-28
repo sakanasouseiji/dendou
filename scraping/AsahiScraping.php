@@ -17,7 +17,6 @@ class AsahiShop{
 	//最初に枠取得用パターン
 	public	$firstPattern='/list_item__product sli_list_col2(.*?)<\/div><\/div>/ius';
 
-
 	//商品名取得用パターン
 	public	$itemPattern='/data-sli-test=\"resultlink\">(.*?)<\/a>/ius';
 	//値段取得用パターン
@@ -25,13 +24,12 @@ class AsahiShop{
 	public	$zeikomiPattern='/sli_price\">(.*?)<\/span>/ius';
 
 	//リンク取得用パターン
-	public	$linkPattern='<a data-tb-sid=\"st_title-link\" class="list_item__product__name\" rel=\"nofollow\" href=\"(.*)\">';
-	public	$linkDeletePattern=array('<a data-tb-sid=\"st_title-link\" class=\"list_item__product__name\" rel="nofollow" href=','>');
+	public	$linkPattern='/st_title-link\" class="list_item__product__name\" rel=\"nofollow\" href=\"(.*)\" data-sli-test=\"resultlink/ius';
+	public	$linkDeletePattern=array('st_title-link" class="list_item__product__name" rel="nofollow" href="','" data-sli-test="resultlink');
 
 	//カラー取得用パターン
 	public	$kobetuColorPattern='/data-js-color-thumb-label=\".*\">/ius';	
-
-
+	
 	//削除用パターン
 	//商品名用
 	public	$itemDeletePattern=array("data-sli-test=\"resultlink\">\n","</a>");
@@ -49,7 +47,6 @@ class AsahiShop{
 	//あさひ用取得パターンここまで
 	}	
 }
-
 
 
 $shop=new AsahiShop();

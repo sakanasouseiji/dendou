@@ -1,4 +1,9 @@
+
 <?php
+//
+//
+require_once("./function.php");
+
 
 //サイクルスポット用取得urt(テスト用)
 
@@ -42,7 +47,6 @@ class CSShop{
 	//サイクルスポット用取得パターンここまで
 	}	
 }
-
 
 
 $shop=new CSShop();
