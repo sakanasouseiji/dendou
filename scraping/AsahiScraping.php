@@ -43,7 +43,7 @@ class AsahiShop{
 
 	function url($page){
 		$page=$page*24;
-		return 'https://ec.cb-asahi.co.jp/category/cat1/%E9%9B%BB%E5%8B%95%E8%87%AA%E8%BB%A2%E8%BB%8A/'.$page.'?isort=price';
+		return 'https://ec.cb-asahi.co.jp/category/cat1/%E9%9B%BB%E5%8B%95%E8%87%AA%E8%BB%A2%E8%BB%8A/'.$page.'?isort=price&view=list';
 	//あさひ用取得パターンここまで
 	}	
 }

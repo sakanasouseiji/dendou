@@ -147,6 +147,7 @@ class ShopScraping{
 			$linkPattern=$this->shop->linkPattern;
 			$linkDeletePattern=$this->shop->linkDeletePattern;
 			$kobetuColorPattern=$this->shop->kobetuColorPattern;
+			$linkReplacePattern=(isset($this->shop->linkReplacePattern))?$this->shop->linkReplacePattern:'';
 		}
 		$pageResult=array();
 		$lineResult=array();
@@ -196,7 +197,7 @@ class ShopScraping{
 			@preg_match($zeikomiPattern,$cell,$zeikomiPrice);
 
 			$itemName[0]=mb_convert_kana(	str_replace($itemDeletePattern,"",$itemName[0])	,'KVas','UTF-8'	);
-			$linkURL[0]=@str_replace($linkDeletePattern,"",$linkURL[0]);
+			$linkURL[0]=@str_replace($linkDeletePattern,$linkReplacePattern,$linkURL[0]);
 			$zeinukiPrice[0]=@str_replace($zeinukiDeletePattern,"",$zeinukiPrice[0]);
 			$zeikomiPrice[0]=str_replace($zeikomiDeletePattern,"",$zeikomiPrice[0]);
 			//preg_match("/20[0-9][0-9][-ー\/]?[0-9]{0,4}/",$itemName[0],$nenshiki);
@@ -339,7 +340,16 @@ class ShopScraping{
 
 	//個別ページ処理
 	function kobetu($pageResult){
+
+		//デバッグ出力
 		$this->arrayPut($pageResult,"kobetuMae");
+
+		foreach($pageResult as $value){
+			if(isset($value["リンク"]){
+				$this->linkSakiGet($value["リンク"]);
+			}
+		}
+
 	/*
 		foreach($pageResult as ){
 			
@@ -366,8 +376,12 @@ class ShopScraping{
 	*/
 		return $pageResult;
 	}
+	function linkSakiGet($link){
+		$kobetuColorPattern=$this->shop->kobetuColorPattern;
+	}
 
-	//配列のファイル出力
+
+	//配列のファイル出力(デバッグ用)
 	function arrayPut($array,$fileName){
 		$midashi="";
 		$honbun="";
@@ -386,8 +400,8 @@ class ShopScraping{
 			} 
 		}
 		$csv=$midashi."\n".$honbun;
-		file_put_contents($fileName.date('Ymd').".csv",$csv,FILE_APPEND|LOCK_EX);
-		file_put_contents($fileName.date('Ymd').".txt",print_r($array,true),FILE_APPEND|LOCK_EX);
+		file_put_contents($fileName.date('Ymd').".csv",$csv,LOCK_EX);
+		file_put_contents($fileName.date('Ymd').".txt",print_r($array,true),LOCK_EX);
 		return;
 	}
 

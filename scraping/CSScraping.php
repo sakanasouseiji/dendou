@@ -25,8 +25,9 @@ class CSShop{
 
 
 	//リンク取得用パターン
-	public	$linkPattern='/<a href=\'/store/ProductDetail.aspx.*onclick=/ius';
-	public	$linkDeletePattern=array('<a href=\'','\' onclick=');
+	public	$linkPattern='/store\/ProductDetail(.*)onclick/iu';
+	public	$linkDeletePattern=array('store','\' onclick');
+	public	$linkReplacePattern=array('https://cyclespot.jp/store','');
 
 	//カラー取得用パターン
 	public	$kobetuColorPattern='/img-responsive\" \/>.*<span>.*<\/span>/ius';	
