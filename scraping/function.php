@@ -96,9 +96,14 @@ class ShopScraping{
 			//各ページの取得結果
 			$pageResult=$this->pageScraping($page);
 
+			//デバッグ出力
+			$this->arrayPut($pageResult,"kobetuMae");
+
 			//個別ページスクレイピング
 			$pageResult=$this->kobetu($pageResult);
+
 			exit();
+
 			//車種の紐付け
 			$pageResult=$this->himotuke($pageResult);
 
@@ -341,15 +346,32 @@ class ShopScraping{
 	//個別ページ処理
 	function kobetu($pageResult){
 
-		//デバッグ出力
-		$this->arrayPut($pageResult,"kobetuMae");
+
+		if(	isset($this->shop->linkReplacePattern)	&&	isset($this->shop->linkReplacement)	){
+			$linkReplacePattern=$this->shop->linkReplacePattern;
+			$linkReplacement=$this->shop->linkReplacement;
+		}
+		$log="";
+		$addResult=array();
+
 
 		foreach($pageResult as $value){
-			if(isset($value["リンク"]){
-				$this->linkSakiGet($value["リンク"]);
-			}
-		}
+			if(	array_key_exists("リンク",$value)	){
+				if(	isset($linkReplacePattern)	&&	isset($linkReplacement)	){
+					$log.="修正前リンク".$value["リンク"]."\n";
+					print_r($linkReplacePattern);
+					print_r($linkReplacement);
+					$string=preg_quote($value["リンク"]);
+					$value["リンク"]=preg_replace($linkReplacePattern,$linkReplacement,$string);
 
+					$log.="修正後リンク".$value["リンク"]."\n";
+				}
+				$log.=$this->linkSakiGet($value["リンク"]);
+
+			}
+
+		}
+		file_put_contents("log.log",$log);
 	/*
 		foreach($pageResult as ){
 			
@@ -378,6 +400,15 @@ class ShopScraping{
 	}
 	function linkSakiGet($link){
 		$kobetuColorPattern=$this->shop->kobetuColorPattern;
+		$array=array();
+		$scrap=scraping($link);
+		print $kobetuColorPattern."\n";
+		if(	preg_match($kobetuColorPattern,$scrap,$array)	){
+			print_r($array);
+		}else{
+			print "false!\n";
+		}
+		return $scrap.$kobetuColorPattern;
 	}
 
 

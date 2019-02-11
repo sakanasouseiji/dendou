@@ -27,9 +27,17 @@ class AsahiShop{
 	public	$linkPattern='/st_title-link\" class="list_item__product__name\" rel=\"nofollow\" href=\"(.*)\" data-sli-test=\"resultlink/ius';
 	public	$linkDeletePattern=array('st_title-link" class="list_item__product__name" rel="nofollow" href="','" data-sli-test="resultlink');
 
+	//リンク修正パターン
+	public	$linkReplacePattern=array("/^.*products%2f/ius","/&lgsku=[0-9]{5}$/ius");
+	public	$linkReplacement=array("https:\/\/ec.cb-asahi.co.jp\/catalog\/products\/","");
+	/*
+	public	$linkReplacePattern="/[a-zA-Z0-9]{32}/ius";
+	public	$linkReplacement="https:\/\/ec.cb-asahi.co.jp\/catalog\/products\/\\0";
+	*/
+
 	//カラー取得用パターン
-	public	$kobetuColorPattern='/data-js-color-thumb-label=\".*\">/ius';	
-	
+	//public	$kobetuColorPattern='/(product_color_carousel_title.*<\/div><\/div><\/div><\/div><\/div>)(data-js-color-thumb-label=.*><img src)/ius';
+	public	$kobetuColorPattern='/product_color_carousel_title.*page_container/ius';
 	//削除用パターン
 	//商品名用
 	public	$itemDeletePattern=array("data-sli-test=\"resultlink\">\n","</a>");
